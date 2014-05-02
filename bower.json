@@ -1,0 +1,20 @@
+{
+	"name": "video-stream",
+	"version": "0.0.1",
+	"description": "A Polymer element that extends the video tag to automatically switch between media resolutions",
+	"authors": [
+		"Makis Tracend <makis@makesit.es>"
+	],
+	"license": "MIT",
+	"keywords": [
+		"polymer",
+		"web-components"
+	],
+	"ignore": [
+		"node_modules"
+	],
+	"dependencies": {
+		"platform": "Polymer/platform#~0.2.0",
+		"polymer": "Polymer/polymer#~0.2.0"
+	}
+}
