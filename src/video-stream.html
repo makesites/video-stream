@@ -1,0 +1,22 @@
+<polymer-element name="video-stream" extends="video" attributes="audio filter">
+<script>
+	Polymer('video-stream', {
+		created: function() {
+			// this is executed when the tag is inserted
+			var video = this;
+
+			video.src = "";
+
+		}
+	});
+
+	// this is executed on import
+
+</script>
+<style>
+	/* element styles */
+	video-stream {
+
+	}
+</style>
+</polymer-element>
