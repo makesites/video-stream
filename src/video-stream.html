@@ -44,6 +44,9 @@
 				var tag = dom[i];
 				// better way to check for an element?
 				if( !tag.attributes ) continue;
+				// first check type (only include files that can be used)
+				var supported = this._checkType( tag.attributes['type'].value );
+				if( !supported ) continue;
 				// support other methods (other than attributes) for setting resolution?
 				var source = {
 					width: parseInt( tag.attributes['width'].value ) || 0,
@@ -61,9 +64,16 @@
 			// look up cache
 			console.log("progress", e);
 		},
+
 		_speed: function( e ){
 			console.log("speed:", e);
+		},
+
+		_checkType: function( type ){
+			// empty string means no support
+			return ( this.canPlayType( type ) !== "" );
 		}
+
 	});
 
 	// this is executed on import
