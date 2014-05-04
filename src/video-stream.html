@@ -5,6 +5,9 @@
 			// this is executed when the tag is inserted
 			var video = this;
 
+			// get video dimensions
+			this.getSize();
+
 			// organize available streams
 			this._sources();
 
@@ -13,18 +16,46 @@
 
 		},
 		// public methods
+		// - returns video dimensions
+		getSize: function(){
+			// get video dimensions
+			var video = {
+				width: this.offsetWidth || this.clientWidth || 0,
+				height: this.offsetHeight || this.clientHeight || 0,
+			}
+			// initially video size is set to the max dimensions
+			var max = video;
+			var active = video;
+			// check memory
+			var memory = this._memory();
+			// * convention - if reaching memory limits cut (max) resolution to half
+			if( memory > 90 ){
+				active.width = active.width/2;
+				active.height = active.height/2;
+			}
+			// save sizes for later
+			this._size = {
+				max: max,
+				active: active
+			}
+
+			return active;
+		},
+
 		// - picks a source
 		loadStream: function( quality ){
 			// fallbacks
 			quality = quality || false;
 			// variables
 			var sources = this.sources;
-			var selected = 0;
 			// if quality selected pick a subset
 			//...
+			var stream = this._pickStream( sources );
 			// save selected steam
-			this.selectedStream = this.sources[ selected ];
+			this.selectedStream = stream;
 			// check if selected stream is cached
+			//...
+			// check against the max resolution that can play...
 
 			// if not cached play a lower res until buffered
 			this.activeStream = this.selectedStream;
@@ -57,7 +88,7 @@
 			}
 
 			this.sources = sources;
-			console.log("sources:", this.sources);
+			//console.log("sources:", this.sources);
 		},
 
 		_progress: function( e ){
@@ -69,9 +100,31 @@
 			console.log("speed:", e);
 		},
 
+		_memory: function(){
+			return (console.memory) ? Math.round( 100 * (console.memory.usedJSHeapSize / console.memory.totalJSHeapSize)) : 0;
+		},
+
 		_checkType: function( type ){
-			// empty string means no support
+			// empty string means no support - other options: maybe, probably
 			return ( this.canPlayType( type ) !== "" );
+		},
+
+		_pickStream: function( sources ){
+			// fallbacks
+			sources = sources || this.sources || [];
+			// variables
+			var selected = {};
+			// get size based on params
+			var size = this.getSize();
+			// loop through streams
+			//console.log("size", size);
+			for( var i in sources ){
+				// compare against the "allowed" size
+				if( sources[i].width <= size.width && sources[i].height <= size.height ){
+					selected = sources[i];
+				}
+			}
+			return selected;
 		}
 
 	});
