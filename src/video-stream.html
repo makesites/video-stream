@@ -1,4 +1,72 @@
 <polymer-element name="video-stream" extends="video" attributes="audio filter">
+<script type="text/javascript">
+
+	// this is executed on import
+	// (underscore) helpers
+	var _ = window._ || {
+		// Based on Underscode.js bind: http://underscorejs.org/#bind
+		bind: function(func, context) {
+			var args, bound;
+			// alias
+			var nativeBind = Function.prototype.bind;
+			var slice = Array.prototype.slice;
+			//
+			if (nativeBind && func.bind === nativeBind) return nativeBind.apply(func, slice.call(arguments, 1));
+			if (!_.isFunction(func)) throw new TypeError;
+			args = slice.call(arguments, 2);
+			return bound = function() {
+				if (!(this instanceof bound)) return func.apply(context, args.concat(slice.call(arguments)));
+				ctor.prototype = func.prototype;
+				var self = new ctor;
+				ctor.prototype = null;
+				var result = func.apply(self, args.concat(slice.call(arguments)));
+				if (Object(result) === result) return result;
+				return self;
+			};
+		},
+		// Based on Underscore.js debounce: http://underscorejs.org/#debounce
+		debounce: function(func, wait, immediate) {
+			var timeout, args, context, timestamp, result;
+
+			var later = function() {
+				var last = _.now() - timestamp;
+				if (last < wait) {
+					timeout = setTimeout(later, wait - last);
+				} else {
+					timeout = null;
+					if (!immediate) {
+						result = func.apply(context, args);
+						context = args = null;
+					}
+				}
+			};
+
+			return function() {
+				context = this;
+				args = arguments;
+				timestamp = _.now();
+				var callNow = immediate && !timeout;
+				if (!timeout) {
+					timeout = setTimeout(later, wait);
+				}
+				if (callNow) {
+					result = func.apply(context, args);
+					context = args = null;
+				}
+
+				return result;
+			};
+		},
+		now: Date.now || function() { return new Date().getTime(); },
+
+		isFunction: function(obj) {
+			return typeof obj === 'function';
+		}
+
+	};
+
+
+</script>
 <script>
 	Polymer('video-stream', {
 		created: function() {
@@ -13,6 +81,7 @@
 
 			// events
 			window.addEventListener('resize', _.bind( this._resize, this ), false);
+			video.addEventListener('progress', _.bind( this._progress, this ), false);
 
 		},
 		// public methods
@@ -78,8 +147,8 @@
 				// update source
 				video.src = selected.src;
 				video.onloadedmetadata = function(){
-					console.log("time", time);
-					video.currentTime = time;
+					// resume
+					video.currentTime = video._cursor;
 				}
 
 			}
@@ -112,8 +181,11 @@
 		},
 
 		_progress: function( e ){
+			//console.log("progress", e);
+			// save cursor
+			this._cursor = this.currentTime;
 			// look up cache
-			console.log("progress", e);
+			//console.log( );
 		},
 
 		_speed: function( e ){
@@ -124,11 +196,11 @@
 			return (console.memory) ? Math.round( 100 * (console.memory.usedJSHeapSize / console.memory.totalJSHeapSize)) : 0;
 		},
 
-		_resize: function( e ){
+		_resize: _.debounce( function( e ){
 			// re-calulate the window size
 			this.loadStream();
 			this.updateStream();
-		},
+		}, 1000),
 
 		_checkType: function( type ){
 			// empty string means no support - other options: maybe, probably
@@ -156,70 +228,6 @@
 		}
 
 	});
-
-	// this is executed on import
-	// (underscore) helpers
-	var _ = window._ || {
-		// Based on Underscode.js bind: http://underscorejs.org/#bind
-		bind: function(func, context) {
-			var args, bound;
-			// alias
-			var nativeBind = Function.prototype.bind;
-			var slice = Array.prototype.slice;
-			//
-			if (nativeBind && func.bind === nativeBind) return nativeBind.apply(func, slice.call(arguments, 1));
-			if (!_.isFunction(func)) throw new TypeError;
-			args = slice.call(arguments, 2);
-			return bound = function() {
-				if (!(this instanceof bound)) return func.apply(context, args.concat(slice.call(arguments)));
-				ctor.prototype = func.prototype;
-				var self = new ctor;
-				ctor.prototype = null;
-				var result = func.apply(self, args.concat(slice.call(arguments)));
-				if (Object(result) === result) return result;
-				return self;
-			};
-		},
-		// Based on Underscore.js debounce: http://underscorejs.org/#debounce
-		debounce: function(func, wait, immediate) {
-			var timeout, args, context, timestamp, result;
-
-			var later = function() {
-				var last = _.now() - timestamp;
-				if (last < wait) {
-					timeout = setTimeout(later, wait - last);
-				} else {
-					timeout = null;
-					if (!immediate) {
-						result = func.apply(context, args);
-						context = args = null;
-					}
-				}
-			};
-
-			return function() {
-				context = this;
-				args = arguments;
-				timestamp = _.now();
-				var callNow = immediate && !timeout;
-				if (!timeout) {
-					timeout = setTimeout(later, wait);
-				}
-				if (callNow) {
-					result = func.apply(context, args);
-					context = args = null;
-				}
-
-				return result;
-			};
-		},
-		now: Date.now || function() { return new Date().getTime(); },
-
-		isFunction: function(obj) {
-			return typeof obj === 'function';
-		}
-
-	};
 
 </script>
 <style>
