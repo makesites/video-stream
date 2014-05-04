@@ -5,9 +5,6 @@
 			// this is executed when the tag is inserted
 			var video = this;
 
-			// get video dimensions
-			this.getSize();
-
 			// organize available streams
 			this._sources();
 
@@ -15,7 +12,7 @@
 			video.src = this.loadStream();
 
 			// events
-			window.addEventListener('resize', this._resize, false);
+			window.addEventListener('resize', _.bind( this._resize, this ), false);
 
 		},
 		// public methods
@@ -61,12 +58,32 @@
 			// check against the max resolution that can play...
 
 			// if not cached play a lower res until buffered
-			this.activeStream = this.selectedStream;
+			if( !this.activeStream ) this.activeStream = this.selectedStream;
 
 			// return source location
 			return this.activeStream.src;
 		},
-		switchStream: function( quality ){
+		// - switches between streams
+		updateStream: function(){
+			var video = this;
+			// get the active stream and the selected stream
+			var active = this.activeStream;
+			var selected = this.selectedStream;
+			// update (based on conditions)
+			if( active === selected ){
+				// do nothing?
+			} else {
+				// find cursor
+				var time = video.currentTime;
+				// update source
+				video.src = selected.src;
+				video.onloadedmetadata = function(){
+					console.log("time", time);
+					video.currentTime = time;
+				}
+
+			}
+
 		},
 		// internal methods
 		// - organizes sources
@@ -108,7 +125,9 @@
 		},
 
 		_resize: function( e ){
-			console.log( "resize:", this );
+			// re-calulate the window size
+			this.loadStream();
+			this.updateStream();
 		},
 
 		_checkType: function( type ){
@@ -124,7 +143,6 @@
 			// get size based on params
 			var size = this.getSize();
 			// loop through streams
-			//console.log("size", size);
 			for( var i in sources ){
 				// only change the selected source if it is a different size
 				if( selected.width == sources[i].width && selected.height == sources[i].height ) continue;
@@ -133,19 +151,22 @@
 					selected = sources[i];
 				}
 			}
+			//console.log( "selected:", selected );
 			return selected;
 		}
 
 	});
 
 	// this is executed on import
-	// underscore helpers
+	// (underscore) helpers
 	var _ = window._ || {
-
-		// helpers
 		// Based on Underscode.js bind: http://underscorejs.org/#bind
-		_bind: function(func, context) {
+		bind: function(func, context) {
 			var args, bound;
+			// alias
+			var nativeBind = Function.prototype.bind;
+			var slice = Array.prototype.slice;
+			//
 			if (nativeBind && func.bind === nativeBind) return nativeBind.apply(func, slice.call(arguments, 1));
 			if (!_.isFunction(func)) throw new TypeError;
 			args = slice.call(arguments, 2);
