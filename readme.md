@@ -29,7 +29,7 @@ bower install video-stream
 <video is="video-stream"></video>
 ```
 
-Use the [index.html](./index.html) as an example.
+Use the [index.html](http://rawgit.com/makesites/video-stream/master/index.html) as an example.
 
 
 ## Options
