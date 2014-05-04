@@ -148,7 +148,7 @@
 				video.src = selected.src;
 				video.onloadedmetadata = function(){
 					// resume
-					video.currentTime = video._cursor;
+					video.currentTime = time;
 				}
 
 			}
@@ -182,8 +182,8 @@
 
 		_progress: function( e ){
 			//console.log("progress", e);
-			// save cursor
-			this._cursor = this.currentTime;
+			// save cursor (if non-zero)
+			//if(this.currentTime) this._cursor = this.currentTime;
 			// look up cache
 			//console.log( );
 		},
@@ -212,6 +212,7 @@
 			sources = sources || this.sources || [];
 			// variables
 			var selected = {};
+			var smallest = { width: 10000, height: 10000 };
 			// get size based on params
 			var size = this.getSize();
 			// loop through streams
@@ -222,7 +223,14 @@
 				if( sources[i].width <= size.width && sources[i].height <= size.height ){
 					selected = sources[i];
 				}
+				// save the smallest size
+				if( sources[i].width <= smallest.width && sources[i].height <= smallest.height ){
+					smallest = sources[i];
+				}
 			}
+			// FIX: if video size smaller that smallest resolution, use that.
+			if( !selected.width ) selected = smallest;
+
 			//console.log( "selected:", selected );
 			return selected;
 		}
