@@ -5,8 +5,64 @@
 			// this is executed when the tag is inserted
 			var video = this;
 
-			video.src = "";
+			// organize available streams
+			this._sources();
 
+			// load the first stream
+			video.src = this.loadStream();
+
+		},
+		// public methods
+		// - picks a source
+		loadStream: function( quality ){
+			// fallbacks
+			quality = quality || false;
+			// variables
+			var sources = this.sources;
+			var selected = 0;
+			// if quality selected pick a subset
+			//...
+			// save selected steam
+			this.selectedStream = this.sources[ selected ];
+			// check if selected stream is cached
+
+			// if not cached play a lower res until buffered
+			this.activeStream = this.selectedStream;
+
+			// return source location
+			return this.activeStream.src;
+		},
+		switchStream: function( quality ){
+		},
+		// internal methods
+		// - organizes sources
+		_sources: function(){
+			var sources = [];
+			var dom = this.getElementsByTagName('source');
+			// save dimensions
+			for (var i in dom) {
+				var tag = dom[i];
+				// better way to check for an element?
+				if( !tag.attributes ) continue;
+				// support other methods (other than attributes) for setting resolution?
+				var source = {
+					width: parseInt( tag.attributes['width'].value ) || 0,
+					height: parseInt( tag.attributes['height'].value ) || 0,
+					src: tag.attributes['src'].value || ""
+				};
+				sources.push( source );
+			}
+
+			this.sources = sources;
+			console.log("sources:", this.sources);
+		},
+
+		_progress: function( e ){
+			// look up cache
+			console.log("progress", e);
+		},
+		_speed: function( e ){
+			console.log("speed:", e);
 		}
 	});
 
