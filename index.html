@@ -5,10 +5,28 @@
 	<title>&lt;video-stream&gt;</title>
 
 	<!-- Importing Web Component's Polyfill -->
-	<script src="//cdnjs.cloudflare.com/ajax/libs/polymer/0.0.20130816/polymer.min.js"></script>
+	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/polymer/0.2.3/platform.js"></script>
+	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/polymer/0.2.3/polymer.js"></script>
 
 	<!-- Importing Custom Elements -->
 	<link rel="import" href="src/video-stream.html">
+
+	<!-- Example styles -->
+	<style>
+		* { margin: 0, padding: 0 }
+
+		html, body {
+			width: 100%;
+			height: 100%;
+			background: #000;
+		}
+
+		video {
+			width: 100%;
+			height: 100%;
+		}
+
+	</style>
 </head>
 <body>
 
@@ -23,6 +41,7 @@
 		<source type="video/mp4" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-1280.mp4">
 		<source type="video/webm" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-1280.webm">
 	</video>
+
 
 </body>
 </html>
