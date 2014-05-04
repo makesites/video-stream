@@ -85,6 +85,12 @@
 
 		},
 		// public methods
+		// - update window size
+		refresh: function(){
+			this.loadStream();
+			this.updateStream();
+		},
+
 		// - returns video dimensions
 		getSize: function(){
 			// get video dimensions
