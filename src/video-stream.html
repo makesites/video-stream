@@ -25,21 +25,21 @@
 			}
 			// initially video size is set to the max dimensions
 			var max = video;
-			var active = video;
+			var target = video;
 			// check memory
 			var memory = this._memory();
 			// * convention - if reaching memory limits cut (max) resolution to half
 			if( memory > 90 ){
-				active.width = active.width/2;
-				active.height = active.height/2;
+				target.width = target.width/2;
+				target.height = target.height/2;
 			}
 			// save sizes for later
 			this._size = {
 				max: max,
-				active: active
+				target: target
 			}
 
-			return active;
+			return target;
 		},
 
 		// - picks a source
