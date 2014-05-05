@@ -84,6 +84,13 @@
 			video.addEventListener('progress', _.bind( this._progress, this ), false);
 
 		},
+		// params
+		_speed: {
+			buffered: 0,
+			timestamp: 0,
+			rate: 0,
+			percent: 0
+		},
 		// public methods
 		// - update window size
 		refresh: function(){
@@ -197,33 +204,34 @@
 		},
 
 		_calculateSpeed: _.debounce( function(){
+			// since video.bufferedBytes & video.bytesTotal are removed from media elements
+			// we'll need to work with buffered seconds...
 			var video = this;
 			// If finished buffering quit now
-			if( this._speed && this._speed.percent == 100 ) return;
+			if( this._speed.percent == 100 ) return;
 			// variables
 			// time
 			var now = (new Date()).getTime();
-			var timestamp = (this._speed) ? this._speed.timestamp : now; // fallback to now...
+			var timestamp = this._speed.timestamp || now; // fallback to now...
 			var duration = (now - timestamp) / 1000; //Math.round()
 			// data
-			var loaded = video.buffered.end(0);
+			var loaded = ( video.buffered.length ) ? video.buffered.end(0) : 0;
 			var total = video.duration;
-			var buffered = (this._speed) ? this._speed.buffered : loaded;
-			var percent = 100 * loaded / total;
+			var buffered = this._speed.buffered || loaded;
+			var percent = Math.round(100 * loaded / total);
 			// if rate is < 1 the playback rate is greater than the buffering rate
-			var rate = (loaded - buffered) / duration; // in % / sec or seconds/ sec
-
+			var rate = (duration) ? ((loaded - buffered) / duration) : 0; // in buffered seconds per sec
 			// save data
 			this._speed = {
-				buffered: buffered,
+				buffered: loaded,
 				timestamp: now,
 				rate: rate,
 				percent: percent
 			}
 
-			console.log( "speed:", JSON.stringify( this._speed )  );
+			//console.log( "speed:", this._speed );
 
-		}, 1000), // trigger once every second
+		}, 1000), // trigger not more than once every second
 
 		_memory: function(){
 			return (console.memory) ? Math.round( 100 * (console.memory.usedJSHeapSize / console.memory.totalJSHeapSize)) : 0;
