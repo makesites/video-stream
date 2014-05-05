@@ -187,6 +187,8 @@
 		},
 
 		_progress: function( e ){
+			// update download rate
+			this._calculateSpeed();
 			//console.log("progress", e);
 			// save cursor (if non-zero)
 			//if(this.currentTime) this._cursor = this.currentTime;
@@ -194,9 +196,34 @@
 			//console.log( );
 		},
 
-		_speed: function( e ){
-			console.log("speed:", e);
-		},
+		_calculateSpeed: _.debounce( function(){
+			var video = this;
+			// If finished buffering quit now
+			if( this._speed && this._speed.percent == 100 ) return;
+			// variables
+			// time
+			var now = (new Date()).getTime();
+			var timestamp = (this._speed) ? this._speed.timestamp : now; // fallback to now...
+			var duration = (now - timestamp) / 1000; //Math.round()
+			// data
+			var loaded = video.buffered.end(0);
+			var total = video.duration;
+			var buffered = (this._speed) ? this._speed.buffered : loaded;
+			var percent = 100 * loaded / total;
+			// if rate is < 1 the playback rate is greater than the buffering rate
+			var rate = (loaded - buffered) / duration; // in % / sec or seconds/ sec
+
+			// save data
+			this._speed = {
+				buffered: buffered,
+				timestamp: now,
+				rate: rate,
+				percent: percent
+			}
+
+			console.log( "speed:", JSON.stringify( this._speed )  );
+
+		}, 1000), // trigger once every second
 
 		_memory: function(){
 			return (console.memory) ? Math.round( 100 * (console.memory.usedJSHeapSize / console.memory.totalJSHeapSize)) : 0;
