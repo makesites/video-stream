@@ -208,11 +208,13 @@
 		_progress: function( e ){
 			// update download rate
 			this._calculateSpeed();
-			//console.log("progress", e);
-			// save cursor (if non-zero)
-			//if(this.currentTime) this._cursor = this.currentTime;
-			// look up cache
-			//console.log( );
+			// check if we're running the "optimal"  resolution
+			if( this.selectedStream !== this.activeStream){
+				// re-calulate the window size
+				console.log("recalculate");
+				this.loadStream();
+				this.updateStream();
+			}
 		},
 
 		_setupSizes: function(){
