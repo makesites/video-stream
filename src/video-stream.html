@@ -76,6 +76,8 @@
 			// organize available streams
 			this._sources();
 
+			this._setupSizes();
+
 			// load the first stream
 			video.src = this.loadStream();
 
@@ -85,6 +87,12 @@
 
 		},
 		// params
+		_size: {
+			max: 0, // this is the size of the video container
+			min: 0, // this is the smallest resolution from the available sources
+			target: 0, // this is the optimal video source (based on resolution)
+			active: 0 // this is the running video source
+		},
 		_speed: {
 			buffered: 0,
 			timestamp: 0,
@@ -115,11 +123,13 @@
 				target.width = target.width/2;
 				target.height = target.height/2;
 			}
-			// save sizes for later
-			this._size = {
-				max: max,
-				target: target
+			// * convention - if download rate is <= zero downgrade to min
+			if( this._speed.rate <= 0 ){
+				target = this._size.min;
 			}
+			// save sizes for later
+			this._size.max = max;
+			this._size.target = target;
 
 			return target;
 		},
@@ -190,6 +200,7 @@
 			}
 
 			this.sources = sources;
+
 			//console.log("sources:", this.sources);
 		},
 
@@ -201,6 +212,19 @@
 			//if(this.currentTime) this._cursor = this.currentTime;
 			// look up cache
 			//console.log( );
+		},
+
+		_setupSizes: function(){
+			var sources = this.sources || [];
+			var min = { width: 10000, height: 10000 };
+			for( var i in sources ){
+				// find the smallest resolution
+				if( sources[i].width <= min.width && sources[i].height <= min.height ){
+					min = sources[i];
+				}
+			}
+			// save the smallest size
+			this._size.min = min;
 		},
 
 		_calculateSpeed: _.debounce( function(){
@@ -253,7 +277,7 @@
 			sources = sources || this.sources || [];
 			// variables
 			var selected = {};
-			var smallest = { width: 10000, height: 10000 };
+			var sizes = this._size;
 			// get size based on params
 			var size = this.getSize();
 			// loop through streams
@@ -264,13 +288,9 @@
 				if( sources[i].width <= size.width && sources[i].height <= size.height ){
 					selected = sources[i];
 				}
-				// save the smallest size
-				if( sources[i].width <= smallest.width && sources[i].height <= smallest.height ){
-					smallest = sources[i];
-				}
 			}
 			// FIX: if video size smaller that smallest resolution, use that.
-			if( !selected.width ) selected = smallest;
+			if( !selected.width ) selected = sizes.min;
 
 			//console.log( "selected:", selected );
 			return selected;
