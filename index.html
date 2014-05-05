@@ -69,6 +69,8 @@
 		<p class="dimensions"></p>
 		<h3>Stream size</h3>
 		<p class="video"></p>
+		<h3>Buffering rate (time/sec)</h3>
+		<p class="rate"></p>
 		<p><small>Sample video: <a href="https://archive.org/details/EarthIlluminated-web">Earth Illuminated</a></small></p>
 	</div>
 
@@ -91,6 +93,8 @@
 	video.addEventListener("progress", function(){
 		// update meta info
 		info.getElementsByClassName("dimensions")[0].innerHTML = video.offsetWidth +"x"+ video.offsetHeight;
+		info.getElementsByClassName("rate")[0].innerHTML = video._speed.rate;
+		// use .videoWidth , .videoHeight instead?
 		info.getElementsByClassName("video")[0].innerHTML = video.selectedStream.width +"x"+ video.selectedStream.height;
 	});
 
