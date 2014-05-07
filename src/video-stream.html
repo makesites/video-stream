@@ -85,11 +85,13 @@
 			// events
 			window.addEventListener('resize', _.bind( this._resize, this ), false);
 			video.addEventListener('progress', _.bind( this._progress, this ), false);
-
+			video.addEventListener('playing', function(){ video.isPlaying }, false);
+			// update isPlaying on stop?
 		},
 		// params
 		_size: {
-			max: 0, // this is the size of the video container
+			window: 0, // this is the size of the video container
+			max: 0, // this is the maximum resolution from the available sources
 			min: 0, // this is the smallest resolution from the available sources
 			target: 0, // this is the optimal video source (based on resolution)
 			active: 0 // this is the running video source
@@ -109,14 +111,18 @@
 
 		// - returns video dimensions
 		getSize: function(){
+			var video = this;
+			// initially video size is set to the max dimensions
+			var target = this._size.max;
 			// get video dimensions
-			var video = {
+			var window = {
 				width: this.offsetWidth || this.clientWidth || 0,
 				height: this.offsetHeight || this.clientHeight || 0,
 			}
-			// initially video size is set to the max dimensions
-			var max = video;
-			var target = video;
+			// if the video container has dimensions use that as a reference
+			if( window.width && window.height ){
+				target = window;
+			}
 			// check memory
 			var memory = this._memory();
 			// * convention - if reaching memory limits cut (max) resolution to half
@@ -125,11 +131,11 @@
 				target.height = target.height/2;
 			}
 			// * convention - if download rate is <= zero downgrade to min
-			if( this._speed.rate <= 0 ){
+			if( video.isPlaying && this._speed.rate <= 0 ){
 				target = this._size.min;
 			}
 			// save sizes for later
-			this._size.max = max;
+			this._size.window = window;
 			this._size.target = target;
 
 			return target;
@@ -173,6 +179,7 @@
 				video.onloadedmetadata = function(){
 					// resume
 					video.currentTime = time;
+					video.play();
 				}
 				// update active stream
 				this.activeStream = selected;
@@ -220,15 +227,20 @@
 
 		_setupSizes: function(){
 			var sources = this.sources || [];
+			var max = { width: 0, height: 0 };
 			var min = { width: 10000, height: 10000 };
 			for( var i in sources ){
 				// find the smallest resolution
 				if( sources[i].width <= min.width && sources[i].height <= min.height ){
 					min = sources[i];
 				}
+				if( sources[i].width > max.width && sources[i].height > max.height ){
+					max = sources[i];
+				}
 			}
-			// save the smallest size
+			// save the sizes
 			this._size.min = min;
+			this._size.max = max;
 		},
 
 		_calculateSpeed: _.debounce( function(){
@@ -243,7 +255,7 @@
 			var timestamp = this._speed.timestamp || now; // fallback to now...
 			var duration = (now - timestamp) / 1000; //Math.round()
 			// data
-			var loaded = ( video.buffered.length ) ? video.buffered.end(0) : 0;
+			var loaded = ( video.buffered && video.buffered.length ) ? video.buffered.end(0) : 0;
 			var total = video.duration;
 			var buffered = this._speed.buffered || loaded;
 			var percent = Math.round(100 * loaded / total);
