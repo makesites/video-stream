@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>&lt;video-stream&gt;</title>
+
+	<!-- Importing Web Component's Polyfill -->
+	<script src="../components/webcomponentsjs/webcomponents.min.js"></script>
+
+	<!-- Importing Custom Elements -->
+	<link rel="import" href="../index.html">
+
+	<!-- Example styles -->
+	<style>
+		* { margin: 0, padding: 0 }
+
+		html, body {
+			width: 100%;
+			height: 100%;
+			background: #000;
+			font-size: 100%;
+			font-family: Arial, sans-serif;
+		}
+
+		video {
+			display: block;
+			width: 100%;
+			height: 100%;
+			margin: 0 auto;
+		}
+
+		#info, #settings {
+			position: absolute;
+			top: 0;
+			padding: 12px 24px;
+			background: rgba(0, 0, 0, .8);
+			color: #ccc;
+		}
+
+		#info {
+			left: 0;
+		}
+		#settings {
+			right: 0;
+		}
+		a {
+			color: #ccc;
+		}
+	</style>
+</head>
+<body>
+
+	<!-- Using Custom Elements -->
+	<video is="video-stream" autoplay disabled>
+		<source type="video/mp4" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-256.mp4" poster="https://farm4.staticflickr.com/3733/12350252935_89f4a2c2f1_m.jpg" width="256" height="144">
+		<source type="video/webm" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-256.webm" poster="https://farm4.staticflickr.com/3733/12350252935_89f4a2c2f1_m.jpg" width="256" height="144">
+		<source type="video/mp4" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-640.mp4" poster="https://farm4.staticflickr.com/3733/12350252935_89f4a2c2f1_z.jpg" width="640" height="360">
+		<source type="video/webm" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-640.webm" poster="https://farm4.staticflickr.com/3733/12350252935_89f4a2c2f1_z.jpg" width="640" height="360">
+		<source type="video/mp4" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-1024.mp4" poster="https://farm4.staticflickr.com/3733/12350252935_89f4a2c2f1_b.jpg" width="1024" height="576">
+		<source type="video/webm" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-1024.webm" poster="https://farm4.staticflickr.com/3733/12350252935_89f4a2c2f1_b.jpg" width="1024" height="576">
+		<source type="video/mp4" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-1280.mp4" poster="https://farm4.staticflickr.com/3733/12350252935_20d3ffced5_h.jpg" width="1280" height="720">
+		<source type="video/webm" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-1280.webm" poster="https://farm4.staticflickr.com/3733/12350252935_20d3ffced5_h.jpg" width="1280" height="720">
+	</video>
+
+
+	<div id="info">
+		In this example we have a <b>disabled</b> video tag. Although we include the same videos, only the poster images are displayed.
+	</div>
+
+
+	<div id="settings">
+		<h3>Settings</h3>
+		<label>Video width:</label>
+		<input type="range" name="width" min="0" max="100" value="100">
+	</div>
+
+	<script type="text/javascript">
+	// example logic...
+
+	// elements
+	var video = document.getElementsByTagName("video")[0];
+	var settings = document.getElementById("settings");
+	var slider = settings.getElementsByTagName("input")[0];
+
+	slider.addEventListener("change", function(){
+		// update meta info
+		video.style.width = this.value +"%";
+		video.style.height = this.value +"%";
+		// update video stream
+		video.refresh();
+	});
+	</script>
+</body>
+</html>
