@@ -21,7 +21,7 @@ bower install video-stream
 2. Import Custom Element:
 
 ```html
-<link rel="import" href="src/video-stream.html">
+<link rel="import" href="./components/video-stream">
 ```
 
 3. Start using it!
@@ -30,7 +30,7 @@ bower install video-stream
 <video is="video-stream"></video>
 ```
 
-Use the [index.html](http://rawgit.com/makesites/video-stream/master/index.html) as an example.
+Use the [index.html](http://rawgit.com/makesites/video-stream/master/examples/index.html) as an example.
 
 
 ## Options

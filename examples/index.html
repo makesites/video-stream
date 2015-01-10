@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>&lt;video-stream&gt;</title>
+
+	<!-- Importing Web Component's Polyfill -->
+	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/polymer/0.2.3/platform.js"></script>
+	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/polymer/0.2.3/polymer.js"></script>
+
+	<!-- Importing Custom Elements -->
+	<link rel="import" href="src/video-stream.html">
+
+	<!-- Example styles -->
+	<style>
+		* { margin: 0, padding: 0 }
+
+		html, body {
+			width: 100%;
+			height: 100%;
+			background: #000;
+			font-size: 100%;
+			font-family: Arial, sans-serif;
+		}
+
+		video {
+			display: block;
+			width: 100%;
+			height: 100%;
+			margin: 0 auto;
+		}
+
+		#info, #settings {
+			position: absolute;
+			top: 0;
+			padding: 12px 24px;
+			background: rgba(0, 0, 0, .8);
+			color: #ccc;
+		}
+
+		#info {
+			left: 0;
+		}
+		#settings {
+			right: 0;
+		}
+		a {
+			color: #ccc;
+		}
+	</style>
+</head>
+<body>
+
+	<!-- Using Custom Elements -->
+	<video is="video-stream" autoplay>
+		<source type="video/mp4" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-256.mp4" width="256" height="144">
+		<source type="video/webm" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-256.webm" width="256" height="144">
+		<source type="video/mp4" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-640.mp4" width="640" height="360">
+		<source type="video/webm" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-640.webm" width="640" height="360">
+		<source type="video/mp4" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-1024.mp4" width="1024" height="576">
+		<source type="video/webm" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-1024.webm" width="1024" height="576">
+		<source type="video/mp4" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-1280.mp4" width="1280" height="720">
+		<source type="video/webm" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-1280.webm" width="1280" height="720">
+	</video>
+
+
+	<div id="info">
+		<h3>Video size</h3>
+		<p class="dimensions"></p>
+		<h3>Stream size</h3>
+		<p class="video"></p>
+		<h3>Buffering rate (time/sec)</h3>
+		<p class="rate"></p>
+		<p><small>Sample video: <a href="https://archive.org/details/EarthIlluminated-web">Earth Illuminated</a></small></p>
+	</div>
+
+
+	<div id="settings">
+		<h3>Settings</h3>
+		<label>Video width:</label>
+		<input type="range" name="width" min="0" max="100" value="100">
+	</div>
+
+	<script type="text/javascript">
+	// example logic...
+
+	// elements
+	var video = document.getElementsByTagName("video")[0];
+	var info = document.getElementById("info");
+	var settings = document.getElementById("settings");
+	var slider = settings.getElementsByTagName("input")[0];
+
+	video.addEventListener("progress", function(){
+		// update meta info
+		info.getElementsByClassName("dimensions")[0].innerHTML = video.offsetWidth +"x"+ video.offsetHeight;
+		info.getElementsByClassName("rate")[0].innerHTML = video._speed.rate;
+		// use .videoWidth , .videoHeight instead?
+		info.getElementsByClassName("video")[0].innerHTML = video.selectedStream.width +"x"+ video.selectedStream.height;
+	});
+
+	slider.addEventListener("change", function(){
+		// update meta info
+		video.style.width = this.value +"%";
+		video.style.height = this.value +"%";
+		// update video stream
+		video.refresh();
+	});
+	</script>
+</body>
+</html>

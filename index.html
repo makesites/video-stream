@@ -1,110 +1,324 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<meta charset="UTF-8">
-	<title>&lt;video-stream&gt;</title>
+<polymer-element name="video-stream" extends="video" attributes="audio filter">
+<script type="text/javascript">
 
-	<!-- Importing Web Component's Polyfill -->
-	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/polymer/0.2.3/platform.js"></script>
-	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/polymer/0.2.3/polymer.js"></script>
+	// this is executed on import
+	// (underscore) helpers
+	// underscore.js > v1.60 required....
+	var _ = window._ || {
+		// Based on Underscode.js bind: http://underscorejs.org/#bind
+		bind: function(func, context) {
+			var args, bound;
+			// alias
+			var nativeBind = Function.prototype.bind;
+			var slice = Array.prototype.slice;
+			//
+			if (nativeBind && func.bind === nativeBind) return nativeBind.apply(func, slice.call(arguments, 1));
+			if (!_.isFunction(func)) throw new TypeError;
+			args = slice.call(arguments, 2);
+			return bound = function() {
+				if (!(this instanceof bound)) return func.apply(context, args.concat(slice.call(arguments)));
+				ctor.prototype = func.prototype;
+				var self = new ctor;
+				ctor.prototype = null;
+				var result = func.apply(self, args.concat(slice.call(arguments)));
+				if (Object(result) === result) return result;
+				return self;
+			};
+		},
+		// Based on Underscore.js debounce: http://underscorejs.org/#debounce
+		debounce: function(func, wait, immediate) {
+			var timeout, args, context, timestamp, result;
 
-	<!-- Importing Custom Elements -->
-	<link rel="import" href="src/video-stream.html">
+			var later = function() {
+				var last = _.now() - timestamp;
+				if (last < wait) {
+					timeout = setTimeout(later, wait - last);
+				} else {
+					timeout = null;
+					if (!immediate) {
+						result = func.apply(context, args);
+						context = args = null;
+					}
+				}
+			};
 
-	<!-- Example styles -->
-	<style>
-		* { margin: 0, padding: 0 }
+			return function() {
+				context = this;
+				args = arguments;
+				timestamp = _.now();
+				var callNow = immediate && !timeout;
+				if (!timeout) {
+					timeout = setTimeout(later, wait);
+				}
+				if (callNow) {
+					result = func.apply(context, args);
+					context = args = null;
+				}
 
-		html, body {
-			width: 100%;
-			height: 100%;
-			background: #000;
-			font-size: 100%;
-			font-family: Arial, sans-serif;
+				return result;
+			};
+		},
+		now: Date.now || function() { return new Date().getTime(); },
+
+		isFunction: function(obj) {
+			return typeof obj === 'function';
 		}
 
-		video {
-			display: block;
-			width: 100%;
-			height: 100%;
-			margin: 0 auto;
+	};
+
+
+</script>
+<script>
+	Polymer('video-stream', {
+		created: function() {
+			// this is executed when the tag is inserted
+			var video = this;
+
+			// organize available streams
+			this._sources();
+
+			this._setupSizes();
+
+			// load the first stream
+			video.src = this.loadStream();
+
+			// events
+			window.addEventListener('resize', _.bind( this._resize, this ), false);
+			video.addEventListener('progress', _.bind( this._progress, this ), false);
+			video.addEventListener('playing', function(){ video.isPlaying }, false);
+			// update isPlaying on stop?
+		},
+		// params
+		_size: {
+			window: 0, // this is the size of the video container
+			max: 0, // this is the maximum resolution from the available sources
+			min: 0, // this is the smallest resolution from the available sources
+			target: 0, // this is the optimal video source (based on resolution)
+			active: 0 // this is the running video source
+		},
+		_speed: {
+			buffered: 0,
+			timestamp: 0,
+			rate: 0,
+			percent: 0
+		},
+		// public methods
+		// - update window size
+		refresh: function(){
+			this.loadStream();
+			this.updateStream();
+		},
+
+		// - returns video dimensions
+		getSize: function(){
+			var video = this;
+			// initially video size is set to the max dimensions
+			var target = this._size.max;
+			// get video dimensions
+			var window = {
+				width: this.offsetWidth || this.clientWidth || 0,
+				height: this.offsetHeight || this.clientHeight || 0,
+			}
+			// if the video container has dimensions use that as a reference
+			if( window.width && window.height ){
+				target = window;
+			}
+			// check memory
+			var memory = this._memory();
+			// * convention - if reaching memory limits cut (max) resolution to half
+			if( memory > 90 ){
+				target.width = target.width/2;
+				target.height = target.height/2;
+			}
+			// * convention - if download rate is <= zero downgrade to min
+			if( video.isPlaying && this._speed.rate <= 0 ){
+				target = this._size.min;
+			}
+			// save sizes for later
+			this._size.window = window;
+			this._size.target = target;
+
+			return target;
+		},
+
+		// - picks a source
+		loadStream: function( quality ){
+			// fallbacks
+			quality = quality || false;
+			// variables
+			var sources = this.sources;
+			// if quality selected pick a subset
+			//...
+			var stream = this._pickStream( sources );
+			// save selected steam
+			this.selectedStream = stream;
+			// check if selected stream is cached
+			//...
+			// check against the max resolution that can play...
+
+			// if not cached play a lower res until buffered
+			if( !this.activeStream ) this.activeStream = this.selectedStream;
+
+			// return source location
+			return this.activeStream.src;
+		},
+		// - switches between streams
+		updateStream: function(){
+			var video = this;
+			// get the active stream and the selected stream
+			var active = this.activeStream;
+			var selected = this.selectedStream;
+			// update (based on conditions)
+			if( active === selected ){
+				// do nothing?
+			} else {
+				// find cursor
+				var time = video.currentTime;
+				// update source
+				video.src = selected.src;
+				video.onloadedmetadata = function(){
+					// resume
+					video.currentTime = time;
+					video.play();
+				}
+				// update active stream
+				this.activeStream = selected;
+			}
+
+		},
+		// internal methods
+		// - organizes sources
+		_sources: function(){
+			var sources = [];
+			var dom = this.getElementsByTagName('source');
+			// save dimensions
+			for (var i in dom) {
+				var tag = dom[i];
+				// better way to check for an element?
+				if( !tag.attributes ) continue;
+				// first check type (only include files that can be used)
+				var supported = this._checkType( tag.attributes['type'].value );
+				if( !supported ) continue;
+				// support other methods (other than attributes) for setting resolution?
+				var source = {
+					width: parseInt( tag.attributes['width'].value ) || 0,
+					height: parseInt( tag.attributes['height'].value ) || 0,
+					src: tag.attributes['src'].value || ""
+				};
+				sources.push( source );
+			}
+
+			this.sources = sources;
+
+			//console.log("sources:", this.sources);
+		},
+
+		_progress: function( e ){
+			// update download rate
+			this._calculateSpeed();
+			// check if we're running the "optimal"  resolution
+			if( this.selectedStream !== this.activeStream){
+				// re-calulate the window size
+				console.log("recalculate");
+				this.loadStream();
+				this.updateStream();
+			}
+		},
+
+		_setupSizes: function(){
+			var sources = this.sources || [];
+			var max = { width: 0, height: 0 };
+			var min = { width: 10000, height: 10000 };
+			for( var i in sources ){
+				// find the smallest resolution
+				if( sources[i].width <= min.width && sources[i].height <= min.height ){
+					min = sources[i];
+				}
+				if( sources[i].width > max.width && sources[i].height > max.height ){
+					max = sources[i];
+				}
+			}
+			// save the sizes
+			this._size.min = min;
+			this._size.max = max;
+		},
+
+		_calculateSpeed: _.debounce( function(){
+			// since video.bufferedBytes & video.bytesTotal are removed from media elements
+			// we'll need to work with buffered seconds...
+			var video = this;
+			// If finished buffering quit now
+			if( this._speed.percent == 100 ) return;
+			// variables
+			// time
+			var now = (new Date()).getTime();
+			var timestamp = this._speed.timestamp || now; // fallback to now...
+			var duration = (now - timestamp) / 1000; //Math.round()
+			// data
+			var loaded = ( video.buffered && video.buffered.length ) ? video.buffered.end(0) : 0;
+			var total = video.duration;
+			var buffered = this._speed.buffered || loaded;
+			var percent = Math.round(100 * loaded / total);
+			// if rate is < 1 the playback rate is greater than the buffering rate
+			var rate = (duration) ? ((loaded - buffered) / duration) : 0; // in buffered seconds per sec
+			// save data
+			this._speed = {
+				buffered: loaded,
+				timestamp: now,
+				rate: rate,
+				percent: percent
+			}
+
+			//console.log( "speed:", this._speed );
+
+		}, 1000), // trigger not more than once every second
+
+		_memory: function(){
+			return (console.memory) ? Math.round( 100 * (console.memory.usedJSHeapSize / console.memory.totalJSHeapSize)) : 0;
+		},
+
+		_resize: _.debounce( function( e ){
+			// re-calulate the window size
+			this.loadStream();
+			this.updateStream();
+		}, 1000),
+
+		_checkType: function( type ){
+			// empty string means no support - other options: maybe, probably
+			return ( this.canPlayType( type ) !== "" );
+		},
+
+		_pickStream: function( sources ){
+			// fallbacks
+			sources = sources || this.sources || [];
+			// variables
+			var selected = {};
+			var sizes = this._size;
+			// get size based on params
+			var size = this.getSize();
+			// loop through streams
+			for( var i in sources ){
+				// only change the selected source if it is a different size
+				if( selected.width == sources[i].width && selected.height == sources[i].height ) continue;
+				// compare against the "allowed" size
+				if( sources[i].width <= size.width && sources[i].height <= size.height ){
+					selected = sources[i];
+				}
+			}
+			// FIX: if video size smaller that smallest resolution, use that.
+			if( !selected.width ) selected = sizes.min;
+
+			//console.log( "selected:", selected );
+			return selected;
 		}
 
-		#info, #settings {
-			position: absolute;
-			top: 0;
-			padding: 12px 24px;
-			background: rgba(0, 0, 0, .8);
-			color: #ccc;
-		}
-
-		#info {
-			left: 0;
-		}
-		#settings {
-			right: 0;
-		}
-		a {
-			color: #ccc;
-		}
-	</style>
-</head>
-<body>
-
-	<!-- Using Custom Elements -->
-	<video is="video-stream" autoplay>
-		<source type="video/mp4" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-256.mp4" width="256" height="144">
-		<source type="video/webm" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-256.webm" width="256" height="144">
-		<source type="video/mp4" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-640.mp4" width="640" height="360">
-		<source type="video/webm" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-640.webm" width="640" height="360">
-		<source type="video/mp4" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-1024.mp4" width="1024" height="576">
-		<source type="video/webm" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-1024.webm" width="1024" height="576">
-		<source type="video/mp4" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-1280.mp4" width="1280" height="720">
-		<source type="video/webm" src="https://archive.org/download/EarthIlluminated-web/Earth_Illuminated-1280.webm" width="1280" height="720">
-	</video>
-
-
-	<div id="info">
-		<h3>Video size</h3>
-		<p class="dimensions"></p>
-		<h3>Stream size</h3>
-		<p class="video"></p>
-		<h3>Buffering rate (time/sec)</h3>
-		<p class="rate"></p>
-		<p><small>Sample video: <a href="https://archive.org/details/EarthIlluminated-web">Earth Illuminated</a></small></p>
-	</div>
-
-
-	<div id="settings">
-		<h3>Settings</h3>
-		<label>Video width:</label>
-		<input type="range" name="width" min="0" max="100" value="100">
-	</div>
-
-	<script type="text/javascript">
-	// example logic...
-
-	// elements
-	var video = document.getElementsByTagName("video")[0];
-	var info = document.getElementById("info");
-	var settings = document.getElementById("settings");
-	var slider = settings.getElementsByTagName("input")[0];
-
-	video.addEventListener("progress", function(){
-		// update meta info
-		info.getElementsByClassName("dimensions")[0].innerHTML = video.offsetWidth +"x"+ video.offsetHeight;
-		info.getElementsByClassName("rate")[0].innerHTML = video._speed.rate;
-		// use .videoWidth , .videoHeight instead?
-		info.getElementsByClassName("video")[0].innerHTML = video.selectedStream.width +"x"+ video.selectedStream.height;
 	});
 
-	slider.addEventListener("change", function(){
-		// update meta info
-		video.style.width = this.value +"%";
-		video.style.height = this.value +"%";
-		// update video stream
-		video.refresh();
-	});
-	</script>
-</body>
-</html>
+</script>
+<style>
+	/* element styles */
+	video-stream {
+
+	}
+</style>
+</polymer-element>
