@@ -64,4 +64,4 @@ Distributed through [Makesites.org](http://makesites.org)
 
 ## License
 
-[MIT License](http://opensource.org/licenses/MIT)
+Released under the [Apache license, version 2.0](http://makesites.org/licenses/APACHE-2.0)

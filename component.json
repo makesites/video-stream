@@ -5,7 +5,12 @@
 	"authors": [
 		"Makis Tracend <makis@makesit.es>"
 	],
-	"license": "MIT",
+	"licenses": [
+		{
+			"type": "Apache license, version 2.0",
+			"url": "http://makesites.org/licenses/APACHE-2.0"
+		}
+	],
 	"keywords": [
 		"component",
 		"custom-element",
