@@ -2,6 +2,21 @@
 
 Web Component that extends the &lt;video&gt; tag to automatically switch between media resolutions.
 
+
+## Features
+
+* Automatically switch video sources
+* Variable poster images
+* Download rate under consideration
+* Unrestricted size and number of videos
+
+
+## Examples
+
+* [Meta info](http://rawgit.com/makesites/video-stream/master/examples/info.html), displaying resolution information and download rate
+* [Poster image](http://rawgit.com/makesites/video-stream/master/examples/poster.html), with the video tag is disabled the placeholder image is displayed
+
+
 ## Install
 
 Using bower:
@@ -28,8 +43,6 @@ bower install video-stream
 ```html
 <video is="video-stream"></video>
 ```
-
-Use the [index.html](http://rawgit.com/makesites/video-stream/master/examples/index.html) as an example.
 
 
 ## Options
