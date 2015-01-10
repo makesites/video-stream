@@ -1,21 +1,11 @@
 <polymer-element name="video-stream" extends="video" attributes="audio filter">
+<!-- js -->
 <script type="text/javascript" src="assets/js/helpers/underscore.js"></script>
 <script type="text/javascript" src="assets/js/video-stream.js"></script>
-<script>
-	Polymer('video-stream', {
-		created: function() {
-			// create view
-			this.view = new VideoStream({
-				el: this
-			});
-		},
 
-		refresh: function(){
-			this.view.refresh();
-		}
-	});
+<!-- main init -->
+<script type="text/javascript" src="src/main.js"></script>
 
-</script>
 <style>
 	/* element styles */
 	video-stream {
