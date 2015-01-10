@@ -1,6 +1,6 @@
 # &lt;video-stream&gt;
 
-Web Component using Polymer that extends the &lt;video&gt; tag to automatically switch between media resolutions.
+Web Component that extends the &lt;video&gt; tag to automatically switch between media resolutions.
 
 ## Install
 
@@ -14,8 +14,7 @@ bower install video-stream
 1. Import Web Components' polyfill:
 
 ```html
-<script src="//cdnjs.cloudflare.com/ajax/libs/polymer/0.2.3/platform.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/polymer/0.2.3/polymer.js"></script>
+<script src="components/webcomponentsjs/webcomponents.min.js"></script>
 ```
 
 2. Import Custom Element:

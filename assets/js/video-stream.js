@@ -113,7 +113,7 @@ VideoStream.prototype = {
 			video.onloadedmetadata = function(){
 				// resume
 				video.currentTime = time;
-				video.play();
+				//video.play();
 			}
 			// update active stream
 			this.activeStream = selected;
@@ -219,7 +219,7 @@ VideoStream.prototype = {
 
 	_checkType: function( type ){
 		// empty string means no support - other options: maybe, probably
-		return ( this.el.canPlayType( type ) !== "" );
+		return ( document.createElement("video").canPlayType( type ) !== "" );
 	},
 
 	_pickStream: function( sources ){
