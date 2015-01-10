@@ -82,10 +82,12 @@ VideoStream.prototype = {
 		// fallbacks
 		quality = quality || false;
 		// variables
+		var video = this.el;
 		var sources = this.sources;
 		// if quality selected pick a subset
 		//...
 		var stream = this._pickStream( sources );
+		var disabled = video.attributes['disabled'] || false;
 		// save selected steam
 		this.selectedStream = stream;
 		// check if selected stream is cached
@@ -96,7 +98,7 @@ VideoStream.prototype = {
 		if( !this.activeStream ) this.activeStream = this.selectedStream;
 
 		// return source location
-		return this.activeStream.src;
+		return ( disabled ) ? "" : this.activeStream.src;
 	},
 
 	// - picks a source
@@ -114,22 +116,27 @@ VideoStream.prototype = {
 		// get the active stream and the selected stream
 		var active = this.activeStream;
 		var selected = this.selectedStream;
+		var disabled = video.attributes['disabled'] || false;
 		// update (based on conditions)
 		if( active === selected ){
 			// do nothing?
 		} else {
-			// find cursor
-			var time = video.currentTime;
-			// update source
-			video.src = selected.src;
-			video.poster = selected.poster;
-			video.onloadedmetadata = function(){
-				// resume
-				video.currentTime = time;
-				//video.play(); // why is this outputting a error?
+			if( !disabled ){
+				// find cursor
+				var time = video.currentTime;
+				// update source
+				video.src = selected.src;
+				video.onloadedmetadata = function(){
+					// resume
+					video.currentTime = time;
+					//video.play(); // why is this outputting a error?
+				}
+				// update active stream
+				this.activeStream = selected;
 			}
-			// update active stream
-			this.activeStream = selected;
+			// always update poster
+			video.poster = selected.poster;
+
 		}
 
 	},
