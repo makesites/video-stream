@@ -10,6 +10,8 @@ VideoStream = function( options ){
 
 	// load the first stream
 	video.src = this.loadStream();
+	// load the first poster
+	video.poster = this.loadPoster();
 
 	// events
 	window.addEventListener('resize', _.bind( this._resize, this ), false);
@@ -96,6 +98,16 @@ VideoStream.prototype = {
 		// return source location
 		return this.activeStream.src;
 	},
+
+	// - picks a source
+	loadPoster: function( quality ){
+		if( this.selectedStream ) return this.selectedStream.poster;
+		// this has all the "real" logic
+		this.loadStream( quality );
+		// return source location
+		return this.selectedStream.poster;
+	},
+
 	// - switches between streams
 	updateStream: function(){
 		var video = this.el;
@@ -110,16 +122,18 @@ VideoStream.prototype = {
 			var time = video.currentTime;
 			// update source
 			video.src = selected.src;
+			video.poster = selected.poster;
 			video.onloadedmetadata = function(){
 				// resume
 				video.currentTime = time;
-				//video.play();
+				//video.play(); // why is this outputting a error?
 			}
 			// update active stream
 			this.activeStream = selected;
 		}
 
 	},
+
 	// internal methods
 	// - organizes sources
 	_sources: function(){
@@ -137,7 +151,8 @@ VideoStream.prototype = {
 			var source = {
 				width: parseInt( tag.attributes['width'].value ) || 0,
 				height: parseInt( tag.attributes['height'].value ) || 0,
-				src: tag.attributes['src'].value || ""
+				src: tag.attributes['src'].value || "",
+				poster: tag.attributes['poster'].value || false
 			};
 			sources.push( source );
 		}
@@ -214,6 +229,7 @@ VideoStream.prototype = {
 	_resize: _.debounce( function( e ){
 		// re-calulate the window size
 		this.loadStream();
+		this.loadPoster();
 		this.updateStream();
 	}, 1000),
 
@@ -245,5 +261,5 @@ VideoStream.prototype = {
 
 		//console.log( "selected:", selected );
 		return selected;
-	}
+	},
 }
