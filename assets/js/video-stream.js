@@ -124,7 +124,7 @@ VideoStream.prototype = {
 	// - organizes sources
 	_sources: function(){
 		var sources = [];
-		var dom = this.getElementsByTagName('source');
+		var dom = this.el.getElementsByTagName('source');
 		// save dimensions
 		for (var i in dom) {
 			var tag = dom[i];
@@ -219,7 +219,7 @@ VideoStream.prototype = {
 
 	_checkType: function( type ){
 		// empty string means no support - other options: maybe, probably
-		return ( this.canPlayType( type ) !== "" );
+		return ( this.el.canPlayType( type ) !== "" );
 	},
 
 	_pickStream: function( sources ){
