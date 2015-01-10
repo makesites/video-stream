@@ -9,7 +9,7 @@
 	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/polymer/0.2.3/polymer.js"></script>
 
 	<!-- Importing Custom Elements -->
-	<link rel="import" href="src/video-stream.html">
+	<link rel="import" href="../index.html">
 
 	<!-- Example styles -->
 	<style>
@@ -93,9 +93,9 @@
 	video.addEventListener("progress", function(){
 		// update meta info
 		info.getElementsByClassName("dimensions")[0].innerHTML = video.offsetWidth +"x"+ video.offsetHeight;
-		info.getElementsByClassName("rate")[0].innerHTML = video._speed.rate;
+		info.getElementsByClassName("rate")[0].innerHTML = video.view._speed.rate;
 		// use .videoWidth , .videoHeight instead?
-		info.getElementsByClassName("video")[0].innerHTML = video.selectedStream.width +"x"+ video.selectedStream.height;
+		info.getElementsByClassName("video")[0].innerHTML = video.view.selectedStream.width +"x"+ video.view.selectedStream.height;
 	});
 
 	slider.addEventListener("change", function(){
