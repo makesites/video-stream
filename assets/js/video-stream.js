@@ -50,8 +50,8 @@ VideoStream.prototype = {
 		var target = this._size.max;
 		// get video dimensions
 		var window = {
-			width: this.offsetWidth || this.clientWidth || 0,
-			height: this.offsetHeight || this.clientHeight || 0,
+			width: video.offsetWidth || video.clientWidth || 0,
+			height: video.offsetHeight || video.clientHeight || 0,
 		}
 		// if the video container has dimensions use that as a reference
 		if( window.width && window.height ){
@@ -230,6 +230,7 @@ VideoStream.prototype = {
 		var sizes = this._size;
 		// get size based on params
 		var size = this.getSize();
+
 		// loop through streams
 		for( var i in sources ){
 			// only change the selected source if it is a different size
